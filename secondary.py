@@ -5,7 +5,7 @@ from aiogram.types import ReplyKeyboardMarkup
 This is module with secondary classes and methods.
 
 Have one variable - TOKEN.
-TOKEN: bot's token
+TOKEN: bot token
 """
 
 TOKEN = ''
@@ -27,17 +27,10 @@ def keyboard(buttons: list) -> ReplyKeyboardMarkup:
     This is function that create keyboard using template buttons (buttons in one list in template
     will be in one row in keyboard).
 
-    :param buttons: it's list with lists with names of buttons
+    :param buttons: it's list with lists with names of buttons. Every list of buttons is the individual line.
     :return kb: keyboard
     """
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
     for row in buttons:
         kb.add(*row)
     return kb
-
-
-if __name__ == '__main__':
-    a = 3987
-    b = 4365
-    c = 4472
-    print(a ** 12 + b ** 12 - c ** 12)
