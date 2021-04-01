@@ -75,6 +75,12 @@ class DirectoriesManager:
         return user
 
     def delete_dirs(self, user=''):
+        """
+        If the variable 'user' isn't empty, this method removes directory '{user}' from directories 'resources/photos'
+        and 'resources/pdf', else it removes that directories.
+
+        :param user: user's id or empty line
+        """
         user = self.__user(user)
         for dr in self.__dirs_list:
             path = f'{self.__main_dir}{dr}{user}'
@@ -82,32 +88,56 @@ class DirectoriesManager:
                 rmdir(path)
 
     def create_dirs(self, user=''):
+        """
+        If the variable 'user' isn't empty, this method calls method for removing and creates directory '{user}' from
+        directories 'resources/photos' and 'resources/pdf', else it calls method for removing and creates that
+        directories.
+
+        :param user: user's id or empty line
+        """
         user = self.__user(user)
         self.delete_dirs(user)
 
         for dr in self.__dirs_list:
             mk(f'{self.__main_dir}{dr}{user}')
 
-    def remove_last_photo(self, user: int, message=None):
+    def remove_photo(self, user: int, message_id=None):
+        """
+        If variable 'message' is None, this method removes last upload photo (if it exists) from the directory
+        'resources/photos/{user}', else it removes photo with id 'message_id'.
+
+        :param user: the id of user whose photo should be removed
+        :param message_id: the id of photo that should be removed
+        """
         dirs = ls(f'{self.__main_dir}{self.__dirs_list[0]}/{user}')
 
-        if message is None:
+        if message_id is None:
             photo = dirs[-1]
-        elif f'{message}.jpg' in dirs:
-            photo = f'{message}.jpg'
+        elif f'{message_id}.jpg' in dirs:
+            photo = f'{message_id}.jpg'
         else:
             return
 
         rm(f'{self.__main_dir}{self.__dirs_list[0]}/{user}/{photo}')
         return int(photo[:-4])
 
-    async def save_photo(self, photo, user: int, name: int):
-        await photo.download(f'{self.__main_dir}{self.__dirs_list[0]}/{user}/{name}.jpg')
-
     def is_empty(self, user: int):
+        """
+        This method check existing photos in the directory 'resources/photos/{user}'
+
+        :param user: the id of user whose photo should be used.
+        :return: the answer on question "Is directory 'resources/photos/{user}' empty?"
+        """
         return not ls(f'{self.__main_dir}{self.__dirs_list[0]}/{user}')
 
     def get_pdf(self, user: int, name: int) -> BinaryIO:
+        """
+        This method returns result PDF-file.
+
+        :param user: the id of user, who should get PDF-file.
+        :param name: the future name of PDF-file
+        :return: PDF-file
+        """
         return open(f'{self.__main_dir}{self.__dirs_list[1]}/{user}/{name}.pdf', 'rb')
 
     def converter(self, user, name):
