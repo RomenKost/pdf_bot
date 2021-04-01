@@ -3,8 +3,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 
-from resource_manager import get_message, DirectoriesManager, add_user
-from secondary import TOKEN, States, keyboard
+from main.resource_manager import get_message, DirectoriesManager, add_user
+from main.secondary import TOKEN, States, keyboard
 
 
 """
@@ -87,7 +87,7 @@ async def remove_last_photo(message: Message):
     (Of course, if it exist).
     """
     if not dir_manager.is_empty(message.chat.id):
-        photo = dir_manager.remove_last_photo(message.chat.id)
+        photo = dir_manager.remove_photo(message.chat.id)
         await bot.delete_message(message.chat.id, photo)
         await bot.delete_message(message.chat.id, message.message_id)
 
@@ -99,7 +99,7 @@ async def remove(message: Message):
     (Of course, if it exists).
     """
     if message.reply_to_message is not None and \
-            (photo := dir_manager.remove_last_photo(message.chat.id, message.reply_to_message.message_id)):
+            (photo := dir_manager.remove_photo(message.chat.id, message.reply_to_message.message_id)):
         await bot.delete_message(message.chat.id, photo)
         await bot.delete_message(message.chat.id, message.message_id)
 
@@ -134,7 +134,7 @@ async def send_pdf(message: Message, state: FSMContext):
 
     Finishes states
     """
-    dir_manager.converter(message.chat.id, message.text)
+    dir_manager.convert(message.chat.id, message.text)
 
     doc = dir_manager.get_pdf(message.chat.id, message.text)
     await bot.send_message(message.chat.id, get_message('get_pdf'), reply_markup=keyboard([['/photos']]))
