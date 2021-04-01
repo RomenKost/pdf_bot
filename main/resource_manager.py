@@ -6,6 +6,10 @@ from os import listdir as ls, mkdir as mk, remove as rm
 from os.path import exists as ex
 from sqlite3 import connect
 
+"""
+This module includes methods to working with files in the directory 'resources'.
+"""
+
 
 def get_message(key: str, language='ru', path='resources/messages.yaml') -> str:
     """
@@ -70,6 +74,12 @@ class DirectoriesManager:
         self.__dirs_list = ['photos', 'pdf']
 
     def __user(self, user):
+        """
+        This method adds '/' to the variable 'user', if user isn't empty line. It's necessary to able remove or
+        create directories 'resources/photos' and 'resources/pdf' by methods 'delete_dirs' and 'create_dirs'.
+
+        :param user: id of user
+        """
         if user:
             user = f'/{user}'
         return user
@@ -121,9 +131,19 @@ class DirectoriesManager:
         rm(f'{self.__main_dir}{self.__dirs_list[0]}/{user}/{photo}')
         return int(photo[:-4])
 
+    async def save_photo(self, photo, user: int, message_id: int):
+        """
+        This method saves photo, that was sent by user in the directory 'resources/photos/{user}'.
+
+        :param photo: the photo object, that has function 'download' for download files.
+        :param user: the id of user whose has sent the photo.
+        :param message_id: id of photo
+        """
+        await photo.download(f'{self.__main_dir}{self.__dirs_list[0]}/{user}/{message_id}.jpg')
+
     def is_empty(self, user: int):
         """
-        This method check existing photos in the directory 'resources/photos/{user}'
+        This method check existing photos in the directory 'resources/photos/{user}'.
 
         :param user: the id of user whose photo should be used.
         :return: the answer on question "Is directory 'resources/photos/{user}' empty?"
@@ -140,7 +160,13 @@ class DirectoriesManager:
         """
         return open(f'{self.__main_dir}{self.__dirs_list[1]}/{user}/{name}.pdf', 'rb')
 
-    def converter(self, user, name):
+    def convert(self, user: int, name: str):
+        """
+        This method converts all photos from directory 'resources/photos/{user}'
+
+        :param user: the id of user whose photos should been converted
+        :param name: the name of the future PDF-file
+        """
         inputFiles = ls(f'{self.__main_dir}{self.__dirs_list[0]}/{user}')
         outputFile = f'{name}.pdf'
 
