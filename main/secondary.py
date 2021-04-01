@@ -8,7 +8,7 @@ Have one variable - TOKEN.
 TOKEN: bot token
 """
 
-TOKEN = ''
+TOKEN = '1538037024:AAH_EJ40xRS7TSCoam4UofmXFIuFmoLoHcc'
 
 
 class States(StatesGroup):

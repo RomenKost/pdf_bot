@@ -64,7 +64,7 @@ async def saver(message: Message):
     """
     if message.photo:
         await dir_manager.save_photo(message.photo.pop(), message.chat.id, message.message_id)
-    elif message.document.file_name[-3:] in ['jpg', 'png']:
+    elif message.document.file_name[-3:] in ['jpg']:
         await dir_manager.save_photo(message.document, message.chat.id, message.message_id)
 
 
