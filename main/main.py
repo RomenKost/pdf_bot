@@ -3,9 +3,9 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.types import Message
 
-from main.resource_manager import get_message, DirectoriesManager, add_user
-from main.secondary import TOKEN, States, keyboard
-
+from resource_manager import get_message, DirectoriesManager, add_user
+from secondary import TOKEN, States, keyboard
+from logs import Console
 
 """
 This module includes bot, dispatcher, all message handlers and function 'main'. 
@@ -18,7 +18,9 @@ Read file 'README.md' to understanding structure of bot-work.
 
 bot = Bot(TOKEN)
 db = Dispatcher(bot, storage=MemoryStorage())
+
 dir_manager = DirectoriesManager()
+console = Console()
 
 
 def main():
@@ -28,6 +30,7 @@ def main():
     """
     try:
         dir_manager.create_dirs()
+        console.start()
         executor.start_polling(dispatcher=db)
     except Exception as e:
         input(e)
@@ -54,6 +57,7 @@ async def photos(message: Message):
     await States.photos.set()
     await bot.send_message(message.chat.id, get_message('send_photos'), reply_markup=keyboard([['To PDF', 'Cancel'],
                                                                                                ['Remove last photo']]))
+    console.start_receiving(message.from_user.username)
 
 
 @db.message_handler(content_types=['photo', 'document'], state=States.photos)
@@ -66,6 +70,7 @@ async def saver(message: Message):
         await dir_manager.save_photo(message.photo.pop(), message.chat.id, message.message_id)
     elif message.document.file_name[-3:] in ['jpg']:
         await dir_manager.save_photo(message.document, message.chat.id, message.message_id)
+    console.photo(message.from_user.username)
 
 
 @db.message_handler(lambda message: message.text == 'To PDF', state=States.photos)
@@ -78,6 +83,7 @@ async def to_pdf(message: Message):
     else:
         await States.next()
         await bot.send_message(message.chat.id, get_message('send_name'), reply_markup=keyboard([['Back', 'Cancel']]))
+        console.name(message.from_user.username)
 
 
 @db.message_handler(lambda message: message.text == 'Remove last photo', state=States.photos)
@@ -90,6 +96,7 @@ async def remove_last_photo(message: Message):
         photo = dir_manager.remove_photo(message.chat.id)
         await bot.delete_message(message.chat.id, photo)
         await bot.delete_message(message.chat.id, message.message_id)
+        console.remove(message.from_user.username, last='last')
 
 
 @db.message_handler(commands=['remove'], state=States.photos)
@@ -102,6 +109,7 @@ async def remove(message: Message):
             (photo := dir_manager.remove_photo(message.chat.id, message.reply_to_message.message_id)):
         await bot.delete_message(message.chat.id, photo)
         await bot.delete_message(message.chat.id, message.message_id)
+        console.remove(message.forward_from.username)
 
 
 @db.message_handler(lambda message: message.text == 'Back', state=States.name)
@@ -112,6 +120,7 @@ async def back(message: Message):
     await States.previous()
     await bot.send_message(message.chat.id, get_message('continue'), reply_markup=keyboard([['To PDF', 'Cancel'],
                                                                                             ['Remove last photo']]))
+    console.back(message.from_user.username)
 
 
 @db.message_handler(lambda message: message.text == 'Cancel', state=[States.photos, States.name])
@@ -124,6 +133,7 @@ async def cancel(message: Message, state: FSMContext):
     dir_manager.delete_dirs(message.chat.id)
     await bot.send_message(message.chat.id, get_message('cancel'), reply_markup=keyboard([['/photos']]))
     await state.finish()
+    console.cancel(message.from_user.username)
 
 
 @db.message_handler(content_types=['text'], state=States.name)
@@ -143,6 +153,7 @@ async def send_pdf(message: Message, state: FSMContext):
 
     dir_manager.delete_dirs(message.chat.id)
     await state.finish()
+    console.pdf(message.from_user.username)
 
 
 if __name__ == '__main__':
